@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthX Apparel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#ecfdf5', 500: '#10b981', 600: '#059669' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Hide scrollbar for cart items */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen relative">
+
+    <nav class="bg-white border-b border-gray-100 px-6 py-4 shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="<?= getScriptUrl() ?>?page=index" target="_top" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-600 transition flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+                </a>
+                <div class="flex items-center gap-2">
+                    <div class="bg-brand-500 p-1.5 rounded-lg text-white">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-bold text-xl text-brand-600">HealthX Apparel</span>
+                </div>
+            </div>
+            
+            <button onclick="toggleCart()" class="relative p-2 hover:bg-gray-100 rounded-full transition">
+                <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-600"></i>
+                <span id="cart-badge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <div class="bg-brand-600 rounded-3xl p-8 mb-10 text-white text-center shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full bg-black opacity-10"></div>
+            <div class="relative z-10">
+                <h1 class="text-3xl md:text-5xl font-bold mb-4">Wear Your Progress</h1>
+                <p class="text-brand-100 mb-6">Exclusive gear for HealthX members. Use your coins or cash.</p>
+                <div class="flex justify-center gap-4">
+                    <button onclick="filterProducts('all')" class="bg-white text-brand-600 px-6 py-2 rounded-full font-bold hover:bg-brand-50 transition">Shop All</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-center gap-2 mb-8 overflow-x-auto pb-2">
+            <button onclick="filterProducts('all')" class="filter-btn bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium transition">All</button>
+            <button onclick="filterProducts('men')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-50 transition">Men</button>
+            <button onclick="filterProducts('women')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-50 transition">Women</button>
+            <button onclick="filterProducts('gear')" class="filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-50 transition">Gear</button>
+        </div>
+
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            </div>
+
+    </main>
+
+    <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col">
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h2 class="font-bold text-lg flex items-center gap-2">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i> Your Cart
+            </h2>
+            <button onclick="toggleCart()" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+            <div class="text-center text-gray-400 mt-10">Your cart is empty</div>
+        </div>
+
+        <div class="p-6 border-t border-gray-100 bg-gray-50">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-gray-500">Total</span>
+                <span id="cart-total" class="text-2xl font-bold text-brand-600">$0.00</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-brand-600 text-white py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg shadow-brand-200">
+                Checkout Now
+            </button>
+        </div>
+    </div>
+
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/50 z-40 hidden backdrop-blur-sm"></div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- DATA: The Products ---
+        const products = [
+            { id: 1, name: "HealthX Performance Tee", price: 29.99, category: "men", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&auto=format&fit=crop&q=60" },
+            { id: 2, name: "Core Leggings", price: 45.00, category: "women", image: "https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?w=500&auto=format&fit=crop&q=60" },
+            { id: 3, name: "Hydration Bottle", price: 15.00, category: "gear", image: "https://images.unsplash.com/photo-1602143407151-011141950038?w=500&auto=format&fit=crop&q=60" },
+            { id: 4, name: "Runner Shorts", price: 25.00, category: "men", image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=500&auto=format&fit=crop&q=60" },
+            { id: 5, name: "Yoga Mat Pro", price: 35.00, category: "gear", image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500&auto=format&fit=crop&q=60" },
+            { id: 6, name: "Sports Bra High-Impact", price: 32.00, category: "women", image: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?w=500&auto=format&fit=crop&q=60" },
+        ];
+
+        let cart = [];
+
+        // --- FUNCTIONS ---
+
+        function renderProducts(filter = 'all') {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
+
+            filtered.forEach(product => {
+                const card = `
+                    <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition group">
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-3">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                            <button onclick="addToCart(${product.id})" class="absolute bottom-2 right-2 bg-white text-brand-600 p-2 rounded-full shadow-md hover:bg-brand-500 hover:text-white transition">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="px-1">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">${product.category}</p>
+                            <h3 class="font-bold text-gray-800 mb-1 truncate">${product.name}</h3>
+                            <p class="text-brand-600 font-bold">$${product.price.toFixed(2)}</p>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+            lucide.createIcons();
+            updateFilterButtons(filter);
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            cart.push(product);
+            updateCartUI();
+            toggleCart(true); // Open cart when item added
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            // Badge
+            const badge = document.getElementById('cart-badge');
+            badge.innerText = cart.length;
+            badge.classList.toggle('hidden', cart.length === 0);
+
+            // List
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            
+            let total = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-400 space-y-2"><i data-lucide="shopping-cart" class="w-12 h-12 opacity-20"></i><p>Your cart is empty</p></div>';
+            } else {
+                cart.forEach((item, index) => {
+                    total += item.price;
+                    container.innerHTML += `
+                        <div class="flex gap-3 bg-white p-3 rounded-xl border border-gray-100 animate-fade-in">
+                            <img src="${item.image}" class="w-16 h-16 rounded-lg object-cover">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm text-gray-800">${item.name}</h4>
+                                <p class="text-brand-600 font-bold text-sm">$${item.price.toFixed(2)}</p>
+                            </div>
+                            <button onclick="removeFromCart(${index})" class="text-gray-300 hover:text-red-500 self-center">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            // Total
+            document.getElementById('cart-total').innerText = '$' + total.toFixed(2);
+            lucide.createIcons();
+        }
+
+        function toggleCart(forceOpen = false) {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            
+            if (forceOpen) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.toggle('translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+        }
+
+        function updateFilterButtons(activeFilter) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.innerText.toLowerCase() === activeFilter.toLowerCase() || (activeFilter === 'all' && btn.innerText === 'All')) {
+                    btn.className = "filter-btn bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium transition";
+                } else {
+                    btn.className = "filter-btn bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-50 transition";
+                }
+            });
+        }
+
+        function filterProducts(category) {
+            renderProducts(category);
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert("Cart is empty!");
+            alert("Thank you for your purchase! Total: $" + document.getElementById('cart-total').innerText);
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        }
+
+        // Initialize
+        window.onload = () => renderProducts('all');
+
+    </script>
+</body>
+</html>
