@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neon Fitness Login — Fixed</title>
+
+  <style>
+    :root{
+      --card-w: 360px;
+      --radius: 14px;
+      --neon: #00f0f0;
+      --bg-image: url('https://static.vecteezy.com/system/resources/thumbnails/008/641/974/small/green-ribbon-with-stethoscope-on-green-color-background-for-supporting-people-living-and-illness-liver-gallbladders-bile-duct-cancer-and-organ-donation-awareness-month-concept-photo.jpg');
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: Inter, Arial, sans-serif;
+      display:grid;
+      place-items:center;
+      background-image:var(--bg-image);
+      background-size:cover;
+      background-position:center;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .login-container{
+      width:var(--card-w);
+      max-width:calc(100% - 32px);
+      padding:32px;
+      border-radius:var(--radius);
+      background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.40));
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 50px rgba(0,240,240,0.06);
+      color:#fff;
+      backdrop-filter: blur(8px);
+      animation: fadeIn .9s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity:0; transform: translateY(18px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .title {
+      margin:0 0 18px 0;
+      font-size:22px;
+      text-align:center;
+      color:var(--neon);
+      text-shadow: 0 0 12px rgba(0,240,240,0.6);
+    }
+
+    form { display:grid; gap:14px; }
+
+    .input-group { display:block; }
+    label{
+      display:block;
+      font-size:13px;
+      margin-bottom:8px;
+      color: #e6f9f9;
+    }
+
+    input[type="text"],
+    input[type="password"]{
+      width:100%;
+      padding:11px 44px 11px 12px; /* room for eye icon at right */
+      border-radius:10px;
+      border: none;
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      font-size:15px;
+      outline: none;
+      transition: box-shadow .12s ease, transform .06s ease;
+    }
+
+    input::placeholder { color: rgba(255,255,255,0.55); }
+
+    input:focus{
+      box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 0 10px rgba(0,240,240,0.12) inset;
+      transform: translateY(-1px);
+    }
+
+    .password-wrapper{ position:relative; }
+
+    .eye-icon{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:18px;
+      cursor:pointer;
+      user-select:none;
+      color: rgba(255,255,255,0.8);
+      padding:6px;
+      border-radius:6px;
+      transition: background .12s ease, color .12s ease;
+    }
+
+    .eye-icon:hover{ background: rgba(255,255,255,0.03); color: var(--neon); }
+
+    .error{
+      display:none;
+      font-size:13px;
+      color:#ff6b6b;
+      margin-top: -6px;
+      margin-bottom: 6px;
+    }
+
+    .login-btn{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:none;
+      background: linear-gradient(90deg, rgba(0,240,240,0.98), rgba(0,200,200,0.95));
+      color:#042026;
+      font-weight:700;
+      font-size:16px;
+      cursor:pointer;
+      box-shadow: 0 6px 22px rgba(0,240,240,0.18);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    .login-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,240,240,0.24);
+    }
+
+    .meta{
+      text-align:center;
+      font-size:13px;
+      margin-top:12px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    @media (max-width:420px){
+      .login-container{ padding:22px; width:92%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="login-container" role="main" aria-labelledby="loginTitle">
+    <h1 id="loginTitle" class="title">Neon Fitness Login</h1>
+
+    <div id="errorMsg" class="error" role="alert" aria-live="assertive"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="input-group">
+        <label for="username">Username or Email</label>
+        <input id="username" name="username" type="text" autocomplete="username" placeholder="you@example.com or username">
+      </div>
+
+      <div class="input-group password-wrapper">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter password">
+        <button type="button" class="eye-icon" id="toggleEye" aria-label="Show password">👁️</button>
+      </div>
+
+      <button type="submit" class="login-btn">Log In</button>
+    </form>
+
+    <div class="meta">Don't have an account? <a href="#" style="color:var(--neon); text-decoration:none; font-weight:700">Sign up</a></div>
+  </main>
+
+  <script>
+    // Helper: simple email regex
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    // Show/Hide password
+    const toggleEye = document.getElementById('toggleEye');
+    const passwordInput = document.getElementById('password');
+    toggleEye.addEventListener('click', () => {
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      toggleEye.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
+      toggleEye.textContent = type === 'password' ? '👁️' : '🙈';
+    });
+
+    // Form validation & submit handling
+    const form = document.getElementById('loginForm');
+    const errorEl = document.getElementById('errorMsg');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault(); 
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+
+      // 1. Basic empty checks
+      if (!user || !pass) {
+        showError('Please fill in both username and password.');
+        return;
+      }
+
+      // 2. Format validation (Email or Length)
+      if (user.includes('@')) {
+        if (!isValidEmail(user)) {
+          showError('Please enter a valid email address.');
+          return;
+        }
+      } else {
+        if (user.length < 3) {
+          showError('Username must be at least 3 characters.');
+          return;
+        }
+      }
+
+      if (pass.length < 4) {
+        showError('Password must be at least 4 characters.');
+        return;
+      }
+
+      // 3. Credential Check (user1 / 12345678)
+      // I added this check so the form actually acts like a login
+      if (user === 'user1' && pass === '12345678') {
+         // --- REDIRECT HERE ---
+         // Using window.top.location.href is usually safer in Apps Script to break out of iframes if needed,
+         // but window.location.href works for standard navigation within the app.
+         window.location.href = "<?= getScriptUrl() ?>?page=index.html";
+      } else {
+         showError('Invalid credentials. Try user1 / 12345678');
+      }
+
+    });
+
+    function showError(msg){
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
