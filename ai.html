@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HealthX AI Coach</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        /* Chat Bubble Animations */
+        @keyframes messagePop { 
+            0% { opacity: 0; transform: translateY(10px) scale(0.95); } 
+            100% { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        .message-anim { animation: messagePop 0.3s ease-out forwards; }
+        
+        /* Custom Scrollbar for Chat */
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
+        .chat-scroll::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        
+        /* Markdown-style content within chat */
+        .prose p { margin-bottom: 0.5em; }
+        .prose ul { list-style-type: disc; padding-left: 1.2em; }
+        .prose strong { color: #059669; }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-4 lg:p-6 overflow-hidden">
+
+    <!-- Header -->
+    <div class="max-w-4xl mx-auto w-full mb-4 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                AI
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Health<span class="text-emerald-500">X</span> Coach</h1>
+                <div class="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Online
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex gap-2">
+            <a id="back-link" href="<?= getScriptUrl() ?>?page=index" class="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm shadow-sm flex items-center gap-2">
+                <span>←</span> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="flex-1 max-w-4xl mx-auto w-full min-h-0"> <!-- min-h-0 allows flex child to scroll -->
+        <div class="glass-card rounded-2xl h-full flex flex-col shadow-xl border border-emerald-100 overflow-hidden relative">
+            
+            <!-- Chat Messages Container -->
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll bg-gray-50/50">
+                
+                <!-- Intro Message -->
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 text-xs font-bold border border-emerald-200">AI</div>
+                    <div class="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-700 max-w-[80%]">
+                        Hello! I'm your HealthX AI Coach. Ask me about workouts, diet tips, or your recent history!
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 bg-white border-t border-gray-100 shrink-0">
+                <form id="chat-form" class="flex gap-2" onsubmit="handleSend(event)">
+                    <input type="text" id="user-input" 
+                        class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                        placeholder="Type your question here (e.g., 'What is T-Pose?')..." autocomplete="off">
+                    
+                    <button type="submit" id="send-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2 group">
+                        <span>Send</span>
+                        <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Setup Navigation
+        google.script.run.withSuccessHandler(url => {
+            if(url) document.getElementById('back-link').href = url;
+        }).getScriptUrl();
+
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // 2. Handle Sending Messages
+        function handleSend(e) {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // UI Updates
+            addMessage(text, 'user');
+            userInput.value = '';
+            
+            // Show Typing Indicator
+            const typingId = showTyping();
+
+            // Simulate Network Delay (for realism)
+            setTimeout(() => {
+                removeTyping(typingId);
+                const response = generateAIResponse(text); // Call local function
+                
+                // Format bold text
+                const formattedResponse = response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                addMessage(formattedResponse, 'ai');
+            }, 600); 
+        }
+
+        // 3. OFFLINE AI LOGIC (Client-Side)
+        // This runs entirely in the browser. No server calls.
+        function generateAIResponse(userPrompt) {
+            var input = userPrompt.toLowerCase().trim();
+            var j1 = 0;
+            // --- GREETINGS ---
+            if (input.includes("hi") || input.includes("hello") || input.includes("hey")) {
+                return "Hello! I am your HealthX Coach. Ready to get moving?";
+            } 
+            
+            // --- SPECIFIC EXERCISES ---
+            else if (input.includes("t-pose") || input.includes("t pose")) {
+                return "The **T-Pose** is excellent for posture! Stand straight and extend your arms out to the sides. Hold it for balance.";
+            } 
+            else if (input.includes("hands up") || input.includes("raise")) {
+                return "**Hands Up** is a great warm-up! Raise your arms fully above your head to stretch your shoulders and back.";
+            } 
+            else if (input.includes("knee") || input.includes("squat") || input.includes("legs")) {
+                return "Touching your **Knees** or squatting builds leg strength. Keep your back straight and don't let your knees go past your toes!";
+            }
+            else if (input.includes("pushup") || input.includes("push up")) {
+                return "**Push-ups** build chest and arm strength. Keep your body in a straight line from head to heels.";
+            }
+            else if (input.includes("plank") || input.includes("core")) {
+                return "A **Plank** is the best core exercise. Hold your body stiff as a board on your elbows and toes.";
+            }
+
+            // --- HEALTH & NUTRITION ---
+            else if (input.includes("diet") || input.includes("food") || input.includes("eat")) {
+                return "Nutrition is key! Focus on **protein** (chicken, beans) for muscle repair and drink plenty of **water**.";
+            } 
+            else if (input.includes("water") || input.includes("hydrate") || input.includes("drink")) {
+                return "Stay hydrated! You should aim for about 2-3 liters of water a day, especially if you are exercising.";
+            }
+            else if (input.includes("sleep") || input.includes("tired")) {
+                return "Sleep is when your muscles grow. Aim for **7-9 hours** of quality sleep per night for recovery.";
+            }
+            else if (input.includes("weight loss") || input.includes("lose weight")) {
+                return "To lose weight, focus on a calorie deficit and consistent cardio like walking or running, combined with strength training.";
+            }
+
+            // --- MOTIVATION & MISC ---
+            else if (input.includes("pain") || input.includes("hurt")) {
+                return "If you feel pain, **stop immediately**! Rest and consult a doctor if it persists. Safety first.";
+            } 
+            else if (input.includes("history") || input.includes("record")) {
+                return "You can view your past exercises on the **History Page**. Click the 'Back' button to find it.";
+            } 
+            else if (input.includes("who are you") || input.includes("what are you")) {
+                return "I am HealthX, your personal AI fitness assistant designed to track your moves and give advice.";
+            }
+            else if (input.includes("joke") || input.includes("funny")) {
+
+                if(j1==2){
+                        return " executed done ! 😂";
+                    }
+                return "Why did the gym goer get arrested? He killed his workout! 😂";
+                var j1 = j1 + 1;
+                    
+            }
+            else if (input.includes("motivation") || input.includes("sad")) {
+                return "You got this! 'The only bad workout is the one that didn't happen.' Keep pushing!";
+            }
+            
+            // --- FALLBACK ---
+            else {
+                return "I can help with exercises like **T-Pose**, **Hands Up**, **Squats**, or give advice on **Diet** and **Sleep**. Try asking about those!";
+            }
+        }
+
+        // --- UI Helper Functions ---
+
+        function addMessage(text, sender) {
+            const isUser = sender === 'user';
+            const div = document.createElement('div');
+            div.className = `flex gap-3 message-anim ${isUser ? 'flex-row-reverse' : ''}`;
+            
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold border shadow-sm
+                    ${isUser ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-emerald-100 text-emerald-600 border-emerald-200'}">
+                    ${isUser ? 'ME' : 'AI'}
+                </div>
+                <div class="p-3 rounded-2xl shadow-sm text-sm max-w-[80%] leading-relaxed prose
+                    ${isUser ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 text-gray-700 rounded-tl-none'}">
+                    ${text}
+                </div>
+            `;
+            
+            chatContainer.appendChild(div);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            const id = 'typing-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'flex gap-3 message-anim';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 text-xs font-bold border border-emerald-200">AI</div>
+                <div class="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-400 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                </div>
+            `;
+            chatContainer.appendChild(div);
+            scrollToBottom();
+            return id;
+        }
+
+        function removeTyping(id) {
+            const el = document.getElementById(id);
+            if(el) el.remove();
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
