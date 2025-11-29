@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthX Nutrition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#ecfdf5', 500: '#10b981', 600: '#059669' },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+
+    <nav class="bg-white border-b border-gray-100 px-6 py-4 shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="<?= getScriptUrl() ?>?page=index" target="_top" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-600 transition flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+                </a>
+                <div class="flex items-center gap-2">
+                    <div class="bg-brand-500 p-1.5 rounded-lg text-white">
+                        <i data-lucide="utensils" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-bold text-xl text-brand-600">Nutrition & Plans</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+
+        <section class="mb-12">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-orange-100 p-2 rounded-xl text-orange-500">
+                        <i data-lucide="calculator" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Calculate Your Needs</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Weight (kg)</label>
+                        <input type="number" id="weight" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="70">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Height (cm)</label>
+                        <input type="number" id="height" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="175">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Age</label>
+                        <input type="number" id="age" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="25">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Activity</label>
+                        <select id="activity" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="1.2">Sedentary (Office job)</option>
+                            <option value="1.375">Light Exercise (1-3 days)</option>
+                            <option value="1.55">Moderate (3-5 days)</option>
+                            <option value="1.725">Active (6-7 days)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 bg-brand-50 rounded-2xl p-6">
+                    <button onclick="calculateCalories()" class="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg shadow-brand-200 w-full md:w-auto">
+                        Calculate Calories
+                    </button>
+                    <div class="text-center md:text-right">
+                        <p class="text-sm text-gray-500 font-medium">Daily Maintenance Calories</p>
+                        <h3 id="result-calories" class="text-3xl font-bold text-brand-600">0 kcal</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Choose Your Goal</h2>
+            
+            <div class="flex gap-2 overflow-x-auto pb-4 mb-6">
+                <button onclick="switchPlan('loss')" class="plan-tab active-tab bg-gray-800 text-white px-6 py-3 rounded-xl font-bold transition whitespace-nowrap">
+                    Weight Loss
+                </button>
+                <button onclick="switchPlan('muscle')" class="plan-tab bg-white border border-gray-200 text-gray-500 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition whitespace-nowrap">
+                    Muscle Gain
+                </button>
+                <button onclick="switchPlan('keto')" class="plan-tab bg-white border border-gray-200 text-gray-500 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition whitespace-nowrap">
+                    Keto Diet
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-2 space-y-4" id="meal-container">
+                    </div>
+
+                <div class="lg:col-span-1">
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 sticky top-24">
+                        <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-5 h-5 text-gray-400"></i> Macro Split
+                        </h3>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-gray-600">Protein</span>
+                                <span id="macro-p-val" class="font-bold text-blue-500">40%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-2">
+                                <div id="macro-p-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 40%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-gray-600">Carbs</span>
+                                <span id="macro-c-val" class="font-bold text-amber-500">35%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-2">
+                                <div id="macro-c-bar" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 35%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-gray-600">Fats</span>
+                                <span id="macro-f-val" class="font-bold text-rose-500">25%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-2">
+                                <div id="macro-f-bar" class="bg-rose-500 h-2 rounded-full transition-all duration-500" style="width: 25%"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-500 leading-relaxed">
+                            <i data-lucide="info" class="w-4 h-4 inline mr-1 mb-1"></i>
+                            <span id="plan-desc">High protein intake to preserve muscle mass while in a calorie deficit. Focus on fibrous vegetables and lean meats.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Data ---
+        const plans = {
+            loss: {
+                desc: "High protein intake to preserve muscle mass while in a calorie deficit. Focus on fibrous vegetables and lean meats.",
+                macros: { p: 40, c: 35, f: 25 },
+                meals: [
+                    { type: "Breakfast", name: "Oatmeal & Berries", cal: 350, icon: "coffee" },
+                    { type: "Lunch", name: "Grilled Chicken Salad", cal: 450, icon: "sun" },
+                    { type: "Snack", name: "Greek Yogurt & Almonds", cal: 200, icon: "cookie" },
+                    { type: "Dinner", name: "Salmon with Asparagus", cal: 500, icon: "moon" }
+                ]
+            },
+            muscle: {
+                desc: "Higher carbohydrate intake to fuel intense workouts and protein to rebuild muscle tissue.",
+                macros: { p: 30, c: 50, f: 20 },
+                meals: [
+                    { type: "Breakfast", name: "3 Eggs & Toast", cal: 500, icon: "coffee" },
+                    { type: "Lunch", name: "Steak & Rice Bowl", cal: 700, icon: "sun" },
+                    { type: "Snack", name: "Protein Shake & Banana", cal: 300, icon: "cookie" },
+                    { type: "Dinner", name: "Pasta with Lean Turkey", cal: 650, icon: "moon" }
+                ]
+            },
+            keto: {
+                desc: "Very low carb, high fat diet to shift metabolism into ketosis (burning fat for fuel).",
+                macros: { p: 25, c: 5, f: 70 },
+                meals: [
+                    { type: "Breakfast", name: "Bacon & Avocado Omelet", cal: 600, icon: "coffee" },
+                    { type: "Lunch", name: "Cobb Salad with Ranch", cal: 700, icon: "sun" },
+                    { type: "Snack", name: "Cheese Strings", cal: 200, icon: "cookie" },
+                    { type: "Dinner", name: "Ribeye Steak with Butter", cal: 800, icon: "moon" }
+                ]
+            }
+        };
+
+        // --- Functions ---
+
+        function calculateCalories() {
+            const w = parseFloat(document.getElementById('weight').value);
+            const h = parseFloat(document.getElementById('height').value);
+            const a = parseFloat(document.getElementById('age').value);
+            const act = parseFloat(document.getElementById('activity').value);
+
+            if (!w || !h || !a) return alert("Please fill in all fields");
+
+            // Mifflin-St Jeor Equation (Male default for simplicity, can add gender toggle)
+            // For Female: remove +5 and subtract 161
+            let bmr = (10 * w) + (6.25 * h) - (5 * a) + 5; 
+            let tdee = Math.round(bmr * act);
+
+            document.getElementById('result-calories').innerText = tdee + " kcal";
+        }
+
+        function switchPlan(planType) {
+            // Update UI Tabs
+            document.querySelectorAll('.plan-tab').forEach(btn => {
+                btn.className = "plan-tab bg-white border border-gray-200 text-gray-500 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition whitespace-nowrap";
+            });
+            event.target.className = "plan-tab active-tab bg-gray-800 text-white px-6 py-3 rounded-xl font-bold transition whitespace-nowrap";
+
+            const data = plans[planType];
+
+            // Render Meals
+            const container = document.getElementById('meal-container');
+            container.innerHTML = '';
+            data.meals.forEach(meal => {
+                container.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-brand-50 text-brand-600 p-3 rounded-xl">
+                                <i data-lucide="${meal.icon}" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">${meal.type}</p>
+                                <h4 class="font-bold text-gray-800">${meal.name}</h4>
+                            </div>
+                        </div>
+                        <span class="font-bold text-gray-400 text-sm">${meal.cal} kcal</span>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+
+            // Update Macros
+            document.getElementById('macro-p-val').innerText = data.macros.p + '%';
+            document.getElementById('macro-p-bar').style.width = data.macros.p + '%';
+            
+            document.getElementById('macro-c-val').innerText = data.macros.c + '%';
+            document.getElementById('macro-c-bar').style.width = data.macros.c + '%';
+            
+            document.getElementById('macro-f-val').innerText = data.macros.f + '%';
+            document.getElementById('macro-f-bar').style.width = data.macros.f + '%';
+
+            document.getElementById('plan-desc').innerText = data.desc;
+        }
+
+        // Init
+        window.onload = () => switchPlan('loss');
+
+    </script>
+</body>
+</html>
