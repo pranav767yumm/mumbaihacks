@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crazy Workout Cards - Neon Edition</title>
+    <style>
+        /* --- Imported Fonts --- */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+        <script src="https://unpkg.com/lucide@latest"></script>
+
+        /* --- Main Body & Layout Styles --- */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            overflow-y: auto; /* Allows vertical scrolling */
+            padding: 40px 20px; /* Padding around the whole grid */
+            
+            /* Dynamic gym background */
+            background: url('https://images.unsplash.com/photo-1548690312-08a68601726a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NDY2Nzl8MHwxfHNlYXJjaHwzfHxneW0lMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTcwMDgxNTAwOHww&ixlib=rb-4.0.3&q=80&w=1080') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            
+            /* Centering the grid container */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* Grid Container for the 3 cards */
+        .cards-container {
+            display: grid;
+            /* Auto-fit will place as many cards as fit, min width 350px, max 1 fraction of space */
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px; /* Space between cards */
+            width: 100%;
+            max-width: 1200px; /* Prevents them getting too wide on massive screens */
+        }
+
+        /* --- Base Card Styles --- */
+        .workout-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 2px solid #00f2ff; /* Neon blue border */
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.6), 0 0 15px rgba(0, 242, 255, 0.3);
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+            position: relative;
+            /* Ensuring elements inside don't overflow rounded corners */
+            overflow: hidden; 
+        }
+
+        .workout-card:hover {
+            transform: translateY(-10px); /* Move up slightly */
+            box-shadow: 0 0 45px rgba(0, 242, 255, 0.8), 0 0 30px rgba(0, 242, 255, 0.5);
+        }
+
+        /* --- Typography & Inner Elements --- */
+        .exercise-name {
+            color: #e91e63; /* Vibrant pink */
+            text-transform: uppercase;
+            font-size: 2em;
+            font-weight: 900;
+            margin-top: 0;
+            border-bottom: 3px solid #00f2ff;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            animation: pulseText 2s infinite alternate;
+        }
+
+        @keyframes pulseText {
+            0% { transform: scale(1); color: #e91e63; }
+            100% { transform: scale(1.02); color: #ff4081; }
+        }
+
+        .body-part {
+            background-color: #a7ffeb; /* Light teal */
+            color: #004d40;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .muscles-list h3, .instructions h3 {
+            color: #007bff;
+            margin-bottom: 8px;
+            border-left: 5px solid #00f2ff;
+            padding-left: 10px;
+            text-align: left;
+            font-size: 1.1em;
+        }
+
+        .muscles-list ul {
+            list-style-type: none;
+            padding-left: 0;
+            text-align: left;
+        }
+
+        .muscles-list li {
+            background: #e1f5fe;
+            margin-bottom: 6px;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .instructions p {
+            line-height: 1.5;
+            color: #555;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        .routine {
+            background-color: #ffccbc; /* Light orange */
+            color: #d84315;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 25px;
+            font-weight: bold;
+        }
+
+        /* --- Video Section Styles --- */
+        .video-wrapper {
+            margin: 25px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #00f2ff;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+            position: relative;
+            /* This creates a 16:9 Aspect Ratio container */
+            padding-bottom: 56.25%; 
+            height: 0;
+            background-color: #000;
+        }
+
+        .video-wrapper iframe, 
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* The clickable thumbnail before video loads */
+        .video-placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            /* Dark overlay so the play button pops */
+            box-shadow: inset 0 0 0 2000px rgba(0,0,0,0.5); 
+            transition: all 0.3s ease;
+        }
+
+        .video-placeholder:hover {
+             box-shadow: inset 0 0 0 2000px rgba(0,0,0,0.3);
+        }
+
+        /* The Neon Play Button */
+        .play-icon {
+            font-size: 4em;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 0 20px #00f2ff, 0 0 40px #00f2ff;
+            transition: transform 0.3s ease;
+        }
+
+        .video-placeholder:hover .play-icon {
+            transform: scale(1.2);
+        }
+
+    </style>
+</head>
+<body>
+  <div>
+  <a href="<?= getScriptUrl() ?>?page=index" target="_top" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-600 transition flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+    </a>
+  </div>
+    <div class="cards-container">
+        <div class="workout-card">
+            <h2 class="exercise-name">💪 The Push-Up</h2>
+            <div class="body-part">Target: Chest & Triceps</div>
+
+            <div class="video-wrapper" id="video-container-1">
+                <div class="video-placeholder" 
+                     /* Gets the YouTube thumbnail automatically */
+                     style="background-image: url('https://img.youtube.com/vi/IODxDxX7oi4/maxresdefault.jpg');"
+                     onclick="loadVideo('video-container-1', 'IODxDxX7oi4')">
+                    <div class="play-icon">▶</div>
+                </div>
+            </div>
+
+            <div class="muscles-list">
+                <h3>Primary Muscles</h3>
+                <ul>
+                    <li>Pectoralis Major</li>
+                    <li>Anterior Deltoids</li>
+                    <li>Triceps Brachii</li>
+                </ul>
+            </div>
+            <div class="instructions">
+                <h3>Quick Tip</h3>
+                <p>Keep your body in a straight line from head to heels. Lower until chest nearly touches floor.</p>
+            </div>
+            <div class="routine">Routine: 3 Sets of 15 Reps</div>
+        </div>
+
+
+        <div class="workout-card">
+            <h2 class="exercise-name">🦵 The Squat</h2>
+            <div class="body-part" style="background-color: #e1bee7; color: #4a148c;">Target: Legs & Glutes</div>
+
+             <div class="video-wrapper" id="video-container-2">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/gsNoPYwWXeM?si=YnmKetnav7ikWanv" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" ></iframe>
+            </div>
+
+            <div class="muscles-list">
+                <h3>Primary Muscles</h3>
+                <ul>
+                    <li>Quadriceps</li>
+                    <li>Gluteus Maximus</li>
+                    <li>Hamstrings</li>
+                </ul>
+            </div>
+            <div class="instructions">
+                <h3>Quick Tip</h3>
+                <p>Keep your chest up and back straight. Lower hips back and down as if sitting in a chair.</p>
+            </div>
+            <div class="routine" style="background-color: #f8bbd0; color: #880e4f;">Routine: 4 Sets of 12 Reps</div>
+        </div>
+
+
+        <div class="workout-card">
+            <h2 class="exercise-name">🔥 The Plank</h2>
+            <div class="body-part" style="background-color: #fff9c4; color: #f57f17;">Target: Total Core</div>
+
+             <div class="video-wrapper" id="video-container-3">
+                 <div class="video-placeholder" 
+                     style="background-image: url('https://img.youtube.com/vi/pSHjTRCQxIw/maxresdefault.jpg');"
+                     onclick="loadVideo('video-container-3', 'pSHjTRCQxIw')">
+                    <div class="play-icon" style="text-shadow: 0 0 20px #ffeb3b, 0 0 40px #ffeb3b;">▶</div>
+                </div>
+            </div>
+
+            <div class="muscles-list">
+                <h3>Primary Muscles</h3>
+                <ul>
+                    <li>Rectus Abdominis</li>
+                    <li>Transverse Abdominis</li>
+                    <li>Lower Back Stabilizers</li>
+                </ul>
+            </div>
+            <div class="instructions">
+                <h3>Quick Tip</h3>
+                <p>Hold a push-up position on forearms. Don't let hips sag or lift too high. Breathe!</p>
+            </div>
+            <div class="routine" style="background-color: #ffe0b2; color: #e65100;">Routine: 3 Sets, Hold for 60s</div>
+        </div>
+
+    </div> <script>
+        // This function is called when a user clicks a video placeholder
+        function loadVideo(containerId, videoId) {
+            // 1. Find the specific container clicked
+            const container = document.getElementById(containerId);
+            
+            // 2. Inject the YouTube Iframe HTML into that container, replacing the placeholder
+            // We add '?autoplay=1' so it starts immediately after clicking
+            container.innerHTML = `
+                <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            `;
+        }
+    </script>
+
+</body>
+</html>
