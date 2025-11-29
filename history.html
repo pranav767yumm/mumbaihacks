@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HealthX History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen p-4 lg:p-8">
+
+    <div class="max-w-5xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">H</div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Health<span class="text-emerald-500">X</span> History</h1>
+                <div id="status-indicator" class="flex items-center gap-2 text-xs font-medium text-emerald-600">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    Live Updates Active
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex gap-2">
+            <!-- UPDATED RELOAD BUTTON -->
+            <button onclick="forceReload()" class="px-4 py-2.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-colors font-medium text-sm">
+                ↻ Fix & Reload
+            </button>
+            <a id="back-link" href="#" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-medium shadow-sm flex items-center gap-2">
+                <span>←</span> Back to Camera
+            </a>
+        </div>
+        
+    </div>
+        <a href="<?= getScriptUrl() ?>?page=index" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-600 transition">← Back</a>
+        <br><br>
+    <!-- Error Box -->
+    <div id="error-box" class="max-w-5xl mx-auto mb-4 hidden">
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+            <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <div>
+                <span class="font-bold">Connection Issue:</span>
+                <span id="error-message" class="text-sm">Connecting...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Debug Box (Shows if things are weird) -->
+    <div id="debug-box" class="max-w-5xl mx-auto mb-4 hidden">
+        <div class="bg-gray-800 text-green-400 font-mono text-xs p-4 rounded-xl overflow-x-auto">
+            <p class="font-bold mb-2 text-white">Debug Info (Share this if asking for help):</p>
+            <pre id="debug-content">No data received yet.</pre>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto glass-card rounded-2xl overflow-hidden border border-emerald-100 shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-emerald-50/80 border-b border-emerald-100 text-emerald-800 uppercase text-xs tracking-wider">
+                        <th class="p-5 font-bold">Time</th>
+                        <th class="p-5 font-bold">Action</th>
+                        <th class="p-5 font-bold">Link</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body" class="divide-y divide-gray-100">
+                    <tr><td colspan="3" class="p-12 text-center text-gray-400">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 1. Get Back Link & Setup URL Logic
+        google.script.run.withSuccessHandler(url => {
+            if(url) {
+                // Set the back link
+                document.getElementById('back-link').href = url;
+                // Save the base URL for our reload logic
+                window.scriptUrl = url;
+            }
+        }).getScriptUrl();
+
+        // 2. Start Data Loop
+        fetchData();
+
+        function fetchData() {
+            const hangTimer = setTimeout(() => {
+                showError({ message: "Timeout. TRY THIS: Click 'Deploy > New Version' in the Apps Script editor." });
+            }, 8000);
+
+            google.script.run
+                .withSuccessHandler((data) => {
+                    clearTimeout(hangTimer);
+                    renderTable(data);
+                    // Refresh data every 4 seconds
+                    setTimeout(fetchData, 4000); 
+                })
+                .withFailureHandler((error) => {
+                    clearTimeout(hangTimer); 
+                    showError(error);
+                    // Retry slower if failing
+                    setTimeout(fetchData, 10000); 
+                })
+                .getHistoryData();
+        }
+        
+        // NEW: Force Reload Logic
+        function forceReload() {
+            if (window.scriptUrl) {
+                // Forces the browser to load the specific history URL
+                window.location.href = window.scriptUrl + "<?= getScriptUrl() ?>?page=history";
+            } else {
+                window.location.reload();
+            }
+        }
+
+        function showError(error) {
+            document.getElementById('error-box').classList.remove('hidden');
+            let msg = error.message || "Unknown Error";
+            if (msg.includes("script function not found") || msg.includes("Timeout")) {
+                msg = "CODE SYNC ERROR: You MUST go to 'Deploy' > 'Manage Deployments' > 'Edit' > 'New Version' for changes to work.";
+            }
+            document.getElementById('error-message').innerText = msg;
+            document.getElementById('status-indicator').innerHTML = `<span class="text-red-500 font-bold">OFFLINE</span>`;
+        }
+
+        function renderTable(data) {
+            document.getElementById('error-box').classList.add('hidden');
+            document.getElementById('status-indicator').innerHTML = `
+                <span class="relative flex h-2 w-2 mr-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span> Live Updates Active`;
+                
+            const tbody = document.getElementById('history-body');
+
+            // --- DEBUG LOGGING ---
+            // If data looks weird, show it in debug box
+            if (!Array.isArray(data)) {
+                document.getElementById('debug-box').classList.remove('hidden');
+                document.getElementById('debug-content').innerText = "Received invalid data: " + JSON.stringify(data);
+            }
+
+            // Handle Server-Side Errors
+            if (data.length > 0 && data[0][0] === "Error") {
+                 showError({ message: data[0][1] });
+                 return;
+            }
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-gray-400">No history found in Sheet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = ''; 
+
+            data.forEach((row, index) => {
+                let timestamp = row[0] ? String(row[0]) : "";
+                let action = row[1] ? String(row[1]) : "Unknown";
+                let link = row[2] ? String(row[2]) : "";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-emerald-50/30 transition-colors animate-fade-in";
+                tr.style.animationDelay = `${index * 0.05}s`;
+
+                tr.innerHTML = `
+                    <td class="p-5 text-sm text-gray-700">${timestamp}</td>
+                    <td class="p-5">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase border ${getActionStyle(action)}">
+                            ${action}
+                        </span>
+                    </td>
+                    <td class="p-5">
+                        <a href="${link}" target="_blank" class="text-blue-500 hover:text-blue-700 hover:underline text-xs break-all block max-w-xs">
+                            ${link}
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function getActionStyle(action) {
+            if (!action) return "bg-gray-100 text-gray-600";
+            const a = action.toString().toUpperCase();
+            if (a.includes("HANDS UP")) return "bg-green-100 text-green-700 border-green-200";
+            if (a.includes("T-POSE")) return "bg-blue-100 text-blue-700 border-blue-200";
+            if (a.includes("KNEE")) return "bg-amber-100 text-amber-700 border-amber-200";
+            return "bg-gray-100 text-gray-600 border-gray-200";
+        }
+    </script>
+</body>
+</html>
