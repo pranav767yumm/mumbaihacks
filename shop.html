@@ -120,12 +120,12 @@
 
         // --- DATA: The Products ---
         const products = [
-            { id: 1, name: "HealthX Performance Tee", price: 29.99, category: "men", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&auto=format&fit=crop&q=60" },
-            { id: 2, name: "Core Leggings", price: 45.00, category: "women", image: "https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?w=500&auto=format&fit=crop&q=60" },
-            { id: 3, name: "Hydration Bottle", price: 15.00, category: "gear", image: "https://images.unsplash.com/photo-1602143407151-011141950038?w=500&auto=format&fit=crop&q=60" },
-            { id: 4, name: "Runner Shorts", price: 25.00, category: "men", image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=500&auto=format&fit=crop&q=60" },
+            { id: 1, name: "HealthX Performance Tee", price: 29.99, category: "men", image: "https://i.etsystatic.com/32255465/r/il/76e4eb/3996868912/il_570xN.3996868912_g4of.jpg" },
+            { id: 2, name: "Core Leggings", price: 45.00, category: "women", image: "https://cdn.shopify.com/s/files/1/1320/2227/files/Core_Leggings_2025_-_Veil_-_Front_Angled_-_RGB.jpg?v=1752700200" },
+            { id: 3, name: "Hydration Bottle", price: 15.00, category: "gear", image: "https://pexpo.in/cdn/shop/files/Extreme_E_1_9cc1603e-3e8d-4317-953b-e9378e829685.jpg?v=1758113535&width=1946" },
+            { id: 4, name: "Runner Shorts", price: 25.00, category: "men", image: "https://images-cdn.ubuy.co.in/6644531e5106a21e552a8cf5-tenjoy-men-39-s-running-shorts-gym.jpg" },
             { id: 5, name: "Yoga Mat Pro", price: 35.00, category: "gear", image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500&auto=format&fit=crop&q=60" },
-            { id: 6, name: "Sports Bra High-Impact", price: 32.00, category: "women", image: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?w=500&auto=format&fit=crop&q=60" },
+            { id: 6, name: "Sports Bra High-Impact", price: 32.00, category: "women", image: "https://image.hm.com/assets/hm/f5/9a/f59ad73b8a05c220fb0d0dbd3837586b1441d067.jpg?imwidth=2160" },
         ];
 
         let cart = [];
@@ -165,8 +165,6 @@
 
         function addToCart(id) {
             const product = products.find(p => p.id === id);
-
-//
             cart.push(product);
             updateCartUI();
             toggleCart(true); 
